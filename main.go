@@ -133,10 +133,10 @@ func main() {
 				nameserver, err := googleDNS.LookupNS(ctx, resourceRecordSet.Name)
 				if err != nil {
 					if resourceRecordSet.Name == zone.DnsName {
-						log.Printf("NOTICE: remove managed zone %s (%s) in project %s: %s",
+						log.Printf("ERROR: unconnected managed zone %s for domain %s in project %s: %s",
 							resourceRecordSet.Name, zone.Name, projectID, err)
 					} else {
-						log.Printf("NOTICE: remove dangling %s NS from managed zone %s in project %s: %s",
+						log.Printf("ERROR: dangling nameserver %s in managed zone %s of project %s: %s",
 							resourceRecordSet.Name, zone.Name, projectID, err)
 					}
 					continue
@@ -152,14 +152,14 @@ func main() {
 				for _, nameServer := range nameserver {
 					actualNameServers[nameServer.Host] = true
 					if _, exists := definedNameServers[nameServer.Host]; !exists {
-						log.Printf("NOTICE: remove '%s' from NS record for domain %s in managed zone %s in project %s",
+						log.Printf("ERROR: incorrect nameserver '%s' for domain %s. It does not exist in managed zone %s of project %s",
 							nameServer.Host, resourceRecordSet.Name, zone.Name, projectID)
 					}
 				}
 
 				for nameServer := range definedNameServers {
 					if _, exists := actualNameServers[nameServer]; !exists {
-						log.Printf("NOTICE: add '%s' to NS record for domain %s in managed zone %s in project %s",
+						log.Printf("ERROR: missing nameserver '%s' for domain %s. It does exist in managed zone %s of project %s",
 							nameServer, resourceRecordSet.Name, zone.Name, projectID)
 					}
 				}
