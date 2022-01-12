@@ -38,6 +38,9 @@ func main() {
 	ctx := context.Background()
 	scopes := []string{"https://www.googleapis.com/auth/cloud-platform"}
 	dnsManagedZoneRegex := regexp.MustCompile(`^//dns.googleapis.com/projects/([^/]*)/managedZones/(.*)$`)
+	managedZones := make(map[string]*dns.ManagedZone)
+	subDomainReferrals := make(map[string]*dns.ManagedZone)
+
 	organizationName := flag.String("organization", "", "to check the DNS integrity of")
 	useDefaultCredentials := flag.Bool("use-default-credentials", false, "to authenticate against GCP")
 
@@ -122,6 +125,12 @@ func main() {
 			continue
 		}
 
+		if _, exists := managedZones[zone.DnsName]; exists {
+			log.Printf("ERROR: found another managed zone for the domain name %s in project %s",
+				zone.DnsName, projectID)
+		}
+		managedZones[zone.DnsName] = zone
+
 		response, err := dnsService.ResourceRecordSets.List(projectID, managedZoneID).Do()
 		if err != nil {
 			log.Fatalf("%s", err)
@@ -140,6 +149,10 @@ func main() {
 							resourceRecordSet.Name, zone.Name, projectID, err)
 					}
 					continue
+				}
+
+				if resourceRecordSet.Name != zone.DnsName {
+					subDomainReferrals[resourceRecordSet.Name] = zone
 				}
 
 				definedNameServers := make(map[string]bool, len(resourceRecordSet.Rrdatas))
@@ -163,6 +176,13 @@ func main() {
 							nameServer, resourceRecordSet.Name, zone.Name, projectID)
 					}
 				}
+			}
+		}
+
+		for subDomain, parentZone := range subDomainReferrals {
+			if _, exists := managedZones[subDomain]; !exists {
+				log.Printf("ERROR: domain %s has a nameserver record, but there is no managed zone for it in this organization",
+					subDomain, parentZone.Name)
 			}
 		}
 	}
