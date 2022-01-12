@@ -1,4 +1,4 @@
-module github.com/binxio/clouddns/integritychecker
+module github.com/binxio/cloud-dns-integrity-checker
 
 go 1.17
 

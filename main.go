@@ -128,6 +128,8 @@ func main() {
 		}
 		for _, resourceRecordSet := range response.Rrsets {
 			if resourceRecordSet.Type == "NS" {
+				log.Printf("INFO: checking nameserver integrity for %s", resourceRecordSet.Name)
+
 				nameserver, err := googleDNS.LookupNS(ctx, resourceRecordSet.Name)
 				if err != nil {
 					if resourceRecordSet.Name == zone.DnsName {
@@ -139,7 +141,6 @@ func main() {
 					}
 					continue
 				}
-				log.Printf("INFO: checking nameserver integrity for %s", resourceRecordSet.Name)
 
 				definedNameServers := make(map[string]bool, len(resourceRecordSet.Rrdatas))
 				actualNameServers := make(map[string]bool, len(resourceRecordSet.Rrdatas))
