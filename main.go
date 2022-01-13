@@ -139,6 +139,10 @@ func main() {
 			if resourceRecordSet.Type == "NS" {
 				log.Printf("INFO: checking nameserver integrity for %s", resourceRecordSet.Name)
 
+				if resourceRecordSet.Name != zone.DnsName {
+					subDomainReferrals[resourceRecordSet.Name] = zone
+				}
+
 				nameserver, err := googleDNS.LookupNS(ctx, resourceRecordSet.Name)
 				if err != nil {
 					if resourceRecordSet.Name == zone.DnsName {
@@ -149,10 +153,6 @@ func main() {
 							resourceRecordSet.Name, zone.Name, projectID, err)
 					}
 					continue
-				}
-
-				if resourceRecordSet.Name != zone.DnsName {
-					subDomainReferrals[resourceRecordSet.Name] = zone
 				}
 
 				definedNameServers := make(map[string]bool, len(resourceRecordSet.Rrdatas))
@@ -178,12 +178,11 @@ func main() {
 				}
 			}
 		}
-
-		for subDomain, parentZone := range subDomainReferrals {
-			if _, exists := managedZones[subDomain]; !exists {
-				log.Printf("ERROR: domain %s has a nameserver record, but there is no managed zone for it in this organization",
-					subDomain, parentZone.Name)
-			}
+	}
+	for subDomain, parentZone := range subDomainReferrals {
+		if _, exists := managedZones[subDomain]; !exists {
+			log.Printf("ERROR: domain %s has a nameserver record in %s, but there is no managed zone for it in this organization",
+				subDomain, parentZone.Name)
 		}
 	}
 }
