@@ -36,5 +36,6 @@ $ cloud-dns-integrity-checker -organization binx.com
 2022/01/12 21:00:45 INFO: checking nameserver integrity for gcp.binx.io.
 2022/01/12 21:00:48 INFO: checking nameserver integrity for u.girlsday.fun.
 2022/01/12 21:00:48 ERROR: unconnected managed zone u.girlsday.fun. for domain u-girlsday-fun in project my-other-project: lookup u.girlsday.fun. on 192.168.188.1:53: no such host
-
+2022/01/12 21:00:55 ERROR: domain somebody-else.google.binx.dev. has a nameserver record in google-binx-dev, but there is no managed zone for it in this organization
+2022/01/12 21:00:56 ERROR: domain mismatch.google.binx.dev. has a nameserver record in google-binx-dev, but there is no managed zone for it in this organization
 ```
