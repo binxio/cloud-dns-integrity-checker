@@ -184,6 +184,7 @@ func (c *CloudDNSIntegrityChecker) Check(ctx context.Context) error {
 			log.Printf("ERROR: found another managed zone for the domain name %s in project %s",
 				zone.DnsName, projectID)
 		}
+		managedZones[zone.DnsName] = zone
 
 		response, err := dnsService.ResourceRecordSets.List(projectID, managedZoneID).Do()
 		if err != nil {
